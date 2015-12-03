@@ -1,14 +1,20 @@
 package com.app.fxa.joke.model;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Service;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
-import android.util.Log;
+import android.content.DialogInterface;
+import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.app.fxa.joke.R;
 import com.app.fxa.joke.activity.MyJokeActivity;
@@ -17,7 +23,7 @@ import com.app.fxa.joke.fragment.MainFragment;
 import java.util.List;
 
 /**
- * Created by chengxu1 on 2015/9/2.
+ * fengxiang
  */
 public class JokeAdapter extends BaseAdapter {
 
@@ -26,10 +32,12 @@ public class JokeAdapter extends BaseAdapter {
     Activity activity;
     List<Joke> jokes;
     LayoutInflater inflater;
+    ClipboardManager clipboardManager;
 
     public JokeAdapter(MainFragment mainFragment, List<Joke> jokes) {
         this.mainFragment = mainFragment;
         this.jokes = jokes;
+        clipboardManager = (ClipboardManager) mainFragment.getActivity().getSystemService(Service.CLIPBOARD_SERVICE);
     }
 
     public JokeAdapter(Activity activity, List<Joke> jokes) {
@@ -39,7 +47,6 @@ public class JokeAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        Log.i(TAG, String.valueOf(jokes.size()));
         return jokes.size();
     }
 
@@ -55,7 +62,7 @@ public class JokeAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder viewHolder = null;
+        ViewHolder viewHolder;
         if (activity != null) {
             inflater = (LayoutInflater) activity
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -71,6 +78,7 @@ public class JokeAdapter extends BaseAdapter {
             viewHolder.contenView = (TextView) convertView.findViewById(R.id.content);
             viewHolder.btnCollect = (ImageView) convertView.findViewById(R.id.btn_collection);
             viewHolder.btnShare = (ImageView) convertView.findViewById(R.id.btn_share);
+            viewHolder.cardView = (CardView) convertView.findViewById(R.id.cardview);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -91,6 +99,32 @@ public class JokeAdapter extends BaseAdapter {
                     mainFragment.save(joke);
                 }
             });
+            viewHolder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mainFragment.getActivity())
+                            .setTitle("选择操作")
+                            .setItems(new String[]{"复制", "分享", "收藏"}, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    if (i == 0) {
+                                        ClipData clipData = ClipData.newPlainText(joke.getTitle(), joke.getContent());
+                                        clipboardManager.setPrimaryClip(clipData);
+                                        Toast.makeText(mainFragment.getActivity(), "已复制到剪切板", Toast.LENGTH_SHORT).show();
+                                    }
+                                    if (i == 1) {
+                                        mainFragment.shareTo(joke);
+                                    }
+                                    if (i == 2) {
+                                        mainFragment.save(joke);
+                                    }
+                                }
+                            });
+                    builder.show();
+                    return false;
+                }
+            });
+
         }
         if (activity != null && activity instanceof MyJokeActivity) {
             viewHolder.btnShare.setOnClickListener(new View.OnClickListener() {
@@ -109,5 +143,6 @@ public class JokeAdapter extends BaseAdapter {
         TextView contenView;
         ImageView btnCollect;
         ImageView btnShare;
+        CardView cardView;
     }
 }

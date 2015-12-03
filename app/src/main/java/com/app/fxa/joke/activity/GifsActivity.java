@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +26,7 @@ import com.app.fxa.joke.R;
 import com.app.fxa.joke.util.AppConfig;
 import com.app.fxa.joke.util.GsonUtil;
 import com.app.fxa.joke.util.ThreadPool;
+import com.baidu.appx.BDBannerAd;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -63,7 +65,8 @@ public class GifsActivity extends BaseActivity implements SwipeRefreshLayout.OnR
     RecyclerView.Adapter adapter;
     List<ImageJoke> data = new ArrayList<ImageJoke>();
     private boolean isRefresh = false;// 是否刷新中
-
+    private static BDBannerAd bannerAdView;
+    RelativeLayout adContainer;
     int loadType = 1;//0 load More,1 refresh
 
     @Override
@@ -74,6 +77,12 @@ public class GifsActivity extends BaseActivity implements SwipeRefreshLayout.OnR
     }
 
     void initView() {
+        bannerAdView = new BDBannerAd(this, "awfNCwb6Ydq5o8jd1aGdWXbW", "5EVLvzaHidDRjYvzoem5PLG5");
+        // 设置横幅广告展示尺寸，如不设置，默认为SIZE_FLEXIBLE;
+        bannerAdView.setAdSize(BDBannerAd.SIZE_FLEXIBLE);
+        adContainer = (RelativeLayout) findViewById(R.id.adContainer);
+        // 显示广告视图
+        adContainer.addView(bannerAdView);
         toolbar = (Toolbar) this.findViewById(R.id.toolbar);
         toolbar.setTitle("搞笑趣图");
         setSupportActionBar(toolbar);
@@ -369,9 +378,9 @@ public class GifsActivity extends BaseActivity implements SwipeRefreshLayout.OnR
         //关闭sso授权
         oks.disableSSOWhenAuthorize();
         // title标题，印象笔记、邮箱、信息、微信、人人网和QQ空间使用
-        oks.setTitle(getString(R.string.share));
+        oks.setTitle(getString(R.string.app_name));
         // titleUrl是标题的网络链接，仅在人人网和QQ空间使用
-        oks.setTitleUrl("http://shouji.baidu.com/software/item?docid=7475147&from=as");
+        oks.setTitleUrl(AppConfig.APP_SHARE_URL);
         // text是分享文本，所有平台都需要这个字段
         oks.setText(joke.getTitle());
         // imagePath是图片的本地路径，Linked-In以外的平台都支持此参数
@@ -384,7 +393,7 @@ public class GifsActivity extends BaseActivity implements SwipeRefreshLayout.OnR
         // site是分享此内容的网站名称，仅在QQ空间使用
         oks.setSite(getString(R.string.app_name));
         // siteUrl是分享此内容的网站地址，仅在QQ空间使用
-        oks.setSiteUrl("http://shouji.baidu.com/software/item?docid=7475147&from=as");
+        oks.setSiteUrl(AppConfig.APP_SHARE_URL);
 // 启动分享GUI
         oks.show(GifsActivity.this);
     }
